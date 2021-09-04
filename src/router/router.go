@@ -29,14 +29,19 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mappedBody := make(map[string]string)
-	err = json.Unmarshal(body, &mappedBody)
-	if err != nil {
-		errorHandler(w, err.Error(), http.StatusInternalServerError)
-		return
+
+	if len(string(body)) > 0 {
+		err = json.Unmarshal(body, &mappedBody)
+		if err != nil {
+			utils.MLogger("something went wrong while unmarshaling response", http.StatusInternalServerError, err)
+			errorHandler(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	output, err := json.Marshal(mappedBody)
 	if err != nil {
+		utils.MLogger("something went wrong while marshaling response", http.StatusInternalServerError, err)
 		errorHandler(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
