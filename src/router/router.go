@@ -14,10 +14,24 @@ func HandleRequests(port string) {
 
 	mux.Handle("/", loggerMiddleware(http.HandlerFunc(rootHandler)))
 	mux.Handle("/post", loggerMiddleware(http.HandlerFunc(postHandler)))
+	mux.Handle("/headers", loggerMiddleware(http.HandlerFunc(headersHandler)))
 
 	log.Printf("Listening on %s\n", port)
 	err := http.ListenAndServe(port, mux)
 	log.Fatal(err)
+}
+
+func headersHandler(w http.ResponseWriter, r *http.Request) {
+	output, err := json.Marshal(r.Header)
+	if err != nil {
+		utils.MLogger("something went wrong while marshaling response", http.StatusInternalServerError, err)
+		errorHandler(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(output)
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
